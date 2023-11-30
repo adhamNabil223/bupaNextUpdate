@@ -3,10 +3,12 @@ import { instance } from '@/components/api/config'
 import withAuth from '@/components/auth/Authentication'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { toast } from 'react-toastify';
+import { ClipLoader } from 'react-spinners';
 
 export default function setting() {
   const [userData, setUserData] = useState({})
-
+  const [loading, updateLoading] = useState(false);
   const validationSchema = yup.object().shape({
     first_name: yup.string().required('First Name is required'),
     last_name: yup.string().required('Last Name is required'),
@@ -26,13 +28,14 @@ export default function setting() {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
+      updateLoading(true)
       try {
         const updateData = await instance.patch(`users/${userData.id}`, values);
-        // Handle success
-        console.log('Data updated successfully:', updateData);
+        toast.success('Data updated successfully')
+        updateLoading(false)
       } catch (error) {
-        // Handle error
-        console.error('Error updating data:', error);
+        toast.error("Somethin went wrong")
+        updateLoading(false)
       }
     },
   });
@@ -69,7 +72,15 @@ export default function setting() {
 
 
   return (
+    <>
+    {
+      loading && 
+      <div className='fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-[500] bg-[#00000061]'>
+        <ClipLoader color="#3b82f6"/>
+      </div>
+    }
     <form onSubmit={formik.handleSubmit}>
+
       <div className="mb-4">
         <label htmlFor="password" className="block mb-1">
          First Name:
@@ -132,6 +143,7 @@ export default function setting() {
       </div>
       <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Update </button>
     </form>
+    </>
   )
 }
 
